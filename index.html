@@ -1,0 +1,73 @@
+<!doctype html>
+<html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sartajshose</title>
+<style>
+body{font-family:Arial;margin:0;background:#f4f6fa;color:#172033}header{background:#111827;color:white;padding:20px}nav{padding:10px;background:#172033}nav button{margin:4px;padding:10px;border:0;border-radius:7px;background:#2563eb;color:white}main{padding:15px}.page{display:none}.page.on{display:block}.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.card,section{background:white;padding:15px;margin:10px 0;border-radius:10px;box-shadow:0 1px 5px #ddd}input,select,button{padding:10px;margin:4px;border-radius:7px;border:1px solid #ccd3df}button{background:#2563eb;color:white;border:0}table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px solid #ddd;text-align:left}
+</style></head>
+<body>
+<header><h2>👟 Sartajshose Factory</h2><small>Production • Stock • Sales • Purchases • Expenses</small></header>
+<nav>
+<button onclick="p('d')">🏠 Dashboard</button><button onclick="p('pr')">👟 Products</button>
+<button onclick="p('m')">📦 Materials</button><button onclick="p('prod')">🏭 Production</button>
+<button onclick="p('s')">💰 Sales</button><button onclick="p('pu')">🛒 Purchases</button>
+<button onclick="p('e')">💸 Expenses</button><button onclick="p('r')">📊 Reports</button>
+</nav><main>
+<div id="d" class="page on"><h2>Dashboard</h2><div class="cards">
+<div class="card">Products<h2 id="cp">0</h2></div><div class="card">Materials<h2 id="cm">0</h2></div>
+<div class="card">Produced<h2 id="cq">0</h2></div><div class="card">Sales<h2 id="cs">Rs 0</h2></div></div></div>
+
+<div id="pr" class="page"><h2>Products / Shoes</h2><section>
+<input id="pn" placeholder="Shoe/model"><input id="ps" placeholder="Size"><input id="pp" type="number" placeholder="Price"><button onclick="add('products')">Add</button>
+<table><tbody id="pt"></tbody></table></section></div>
+
+<div id="m" class="page"><h2>Raw Materials</h2><section>
+<input id="mn" placeholder="Material"><input id="mq" type="number" placeholder="Quantity"><input id="mu" placeholder="Unit"><button onclick="add('materials')">Add</button>
+<table><tbody id="mt"></tbody></table></section></div>
+
+<div id="prod" class="page"><h2>Production</h2><section>
+<select id="prodP"></select><input id="prodQ" type="number" placeholder="Units"><button onclick="add('production')">Record</button>
+<table><tbody id="prodt"></tbody></table></section></div>
+
+<div id="s" class="page"><h2>Sales</h2><section>
+<select id="saleP"></select><input id="saleQ" type="number" placeholder="Quantity"><input id="cu" placeholder="Customer"><button onclick="add('sales')">Record</button>
+<table><tbody id="st"></tbody></table></section></div>
+
+<div id="pu" class="page"><h2>Purchases</h2><section>
+<input id="pin" placeholder="Item / supplier"><input id="pia" type="number" placeholder="Amount"><button onclick="add('purchases')">Add</button>
+<table><tbody id="put"></tbody></table></section></div>
+
+<div id="e" class="page"><h2>Expenses</h2><section>
+<input id="en" placeholder="Expense"><input id="ea" type="number" placeholder="Amount"><button onclick="add('expenses')">Add</button>
+<table><tbody id="et"></tbody></table></section></div>
+
+<div id="r" class="page"><h2>Reports</h2><section>
+<p>Total Sales: <b id="rs">Rs 0</b></p><p>Purchases: <b id="rpu">Rs 0</b></p><p>Expenses: <b id="re">Rs 0</b></p><p>Net: <b id="rn">Rs 0</b></p>
+<button onclick="localStorage.clear();location.reload()">Reset all data</button></section></div>
+</main>
+<script>
+let D=JSON.parse(localStorage.getItem('SS')||'{"products":[],"materials":[],"production":[],"sales":[],"purchases":[],"expenses":[]}');
+const money=n=>'Rs '+Number(n||0).toLocaleString('en-PK'),save=()=>{localStorage.SS=JSON.stringify(D);render()};
+function p(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));document.getElementById(id).classList.add('on');render()}
+function add(t){
+ let x;
+ if(t==='products'){x={name:pn.value,size:ps.value,price:+pp.value||0};if(!x.name)return;pn.value=ps.value=pp.value=''}
+ if(t==='materials'){x={name:mn.value,qty:+mq.value||0,unit:mu.value};if(!x.name)return;mn.value=mq.value=mu.value=''}
+ if(t==='production'){let q=+prodQ.value||0;let a=D.products.find(x=>x.id==prodP.value);if(!a||q<1)return;x={product:a.name,qty:q};prodQ.value=''}
+ if(t==='sales'){let q=+saleQ.value||0,a=D.products.find(x=>x.id==saleP.value);if(!a||q<1)return;x={product:a.name,qty:q,customer:cu.value,total:q*a.price};saleQ.value=cu.value=''}
+ if(t==='purchases'){x={name:pin.value,amount:+pia.value||0};if(!x.name)return;pin.value=pia.value=''}
+ if(t==='expenses'){x={name:en.value,amount:+ea.value||0};if(!x.name)return;en.value=ea.value=''}
+ x.id=Date.now();x.date=new Date().toLocaleDateString();D[t].push(x);save()
+}
+function render(){
+ cp.textContent=D.products.length;cm.textContent=D.materials.length;cq.textContent=D.production.reduce((a,x)=>a+x.qty,0);
+ let sales=D.sales.reduce((a,x)=>a+x.total,0),pur=D.purchases.reduce((a,x)=>a+x.amount,0),exp=D.expenses.reduce((a,x)=>a+x.amount,0);
+ cs.textContent=money(sales);rs.textContent=money(sales);rpu.textContent=money(pur);re.textContent=money(exp);rn.textContent=money(sales-pur-exp);
+ pt.innerHTML=D.products.map(x=>'<tr><td>'+x.name+'</td><td>'+x.size+'</td><td>'+money(x.price)+'</td></tr>').join('');
+ mt.innerHTML=D.materials.map(x=>'<tr><td>'+x.name+'</td><td>'+x.qty+' '+x.unit+'</td></tr>').join('');
+ let o=D.products.map(x=>'<option value="'+x.id+'">'+x.name+'</option>').join('');prodP.innerHTML=saleP.innerHTML=o||'<option>Add product first</option>';
+ prodt.innerHTML=D.production.map(x=>'<tr><td>'+x.product+'</td><td>'+x.qty+'</td><td>'+x.date+'</td></tr>').join('');
+ st.innerHTML=D.sales.map(x=>'<tr><td>'+x.product+'</td><td>'+x.qty+'</td><td>'+x.customer+'</td><td>'+money(x.total)+'</td></tr>').join('');
+ put.innerHTML=D.purchases.map(x=>'<tr><td>'+x.name+'</td><td>'+money(x.amount)+'</td></tr>').join('');
+ et.innerHTML=D.expenses.map(x=>'<tr><td>'+x.name+'</td><td>'+money(x.amount)+'</td></tr>').join('')
+}render();
+</script></body></html>
